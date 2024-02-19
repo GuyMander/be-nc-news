@@ -1,4 +1,5 @@
-const { fetchAllTopics, fetch_APIs } = require('../models/model');
+const { fetchAllTopics } = require('../models/model');
+const fs = require('fs/promises');
 
 
 exports.getAllTopics = (request, response, next) => {
@@ -11,7 +12,14 @@ exports.getAllTopics = (request, response, next) => {
     })
 }
 
-exports.getAll_APIs = async (request, response, next) => {
-    const api_Obj = await fetch_APIs()
-    response.status(200).send(api_Obj);
+exports.getAll_APIs = (request, response, next) => {
+    return fs.readFile(`${__dirname}/../endpoints.json`,'utf-8')
+    .then((contents) => {
+        const full_API_JSON_Obj = JSON.parse(contents);
+        const output = {}
+            for(const key in full_API_JSON_Obj){
+                output[key] = full_API_JSON_Obj[key].description
+            }
+        return response.status(200).send(output);
+    })
 }

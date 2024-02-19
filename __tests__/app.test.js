@@ -72,7 +72,7 @@ describe('CORE: GET /api', () => {
             expect(typeof apiObj).toBe('object');
         })
     })
-    test('returns the correct representation of all apis', () => {    
+    test('returns the correct representation (api:description) of all apis within endpoint.json file', () => {    
         return request(app)
         .get('/api')
         .expect(200)
@@ -80,13 +80,13 @@ describe('CORE: GET /api', () => {
             const response_API_Obj = response.body;
             return fs.readFile(`${__dirname}/../endpoints.json`,'utf-8')
             .then((contents) => {
-            const actual_API_Obj = JSON.parse(contents);
-            expect(response_API_Obj).toEqual(actual_API_Obj);
-
-//a brief description of the purpose and functionality of the endpoint.
-//which queries are accepted.
-//what format the request body needs to adhere to.
-//what an example response looks like.
+            const full_API_JSON_Obj = JSON.parse(contents);
+            const expected = {}
+            for(const key in full_API_JSON_Obj){
+                expected[key] = full_API_JSON_Obj[key].description
+            }
+            
+            expect(response_API_Obj).toEqual(expected);
             })
         })
     })
