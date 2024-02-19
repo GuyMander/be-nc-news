@@ -1,9 +1,9 @@
-const db = require('../db/connection')
-const data = require('../db/data/test-data/index')
- const seed = require('../db/seeds/seed')
- const { app } = require('../app')
- const request = require('supertest')
-const { response } = require('express')
+const db = require('../db/connection');
+const data = require('../db/data/test-data/index');
+const seed = require('../db/seeds/seed');
+const { app } = require('../app');
+const request = require('supertest');
+const fs = require('fs/promises');
 
 beforeEach(() => seed(data));
 afterAll(() => db.end());
@@ -15,21 +15,29 @@ describe('CORE: GET /api/topics', () => {
         .get('/api/topics')
         .expect(200)
     });
-    test('returns an array', () => {
+    test('returns an object', () => {
+        return request(app)
+        .get('/api/topics')
+        .expect(200)
+        .then((response) => {
+            expect(typeof response.body).toBe('object');
+        })
+    })
+    test('returns an array within the object of key "topics"', () => {
         return request(app)
         .get('/api/topics')
         .expect(200)
         .then((response)=>{
-            const topics = response.body;
+            const topics = response.body.topics;
             expect(Array.isArray(topics)).toBe(true);
         })
     });
-    test('returns an array of objects', () => {
+    test('returns an array of objects within the topics key', () => {
         return request(app)
         .get('/api/topics')
         .expect(200)
         .then((response)=>{
-            const topics = response.body;
+            const topics = response.body.topics;
             topics.forEach((topic) => {
                 expect(typeof topic).toBe('object');
             });
@@ -40,7 +48,7 @@ describe('CORE: GET /api/topics', () => {
         .get('/api/topics')
         .expect(200)
         .then((response)=>{
-            const topics = response.body;
+            const topics = response.body.topics;
             topics.forEach((topic) => {
                 expect(topic).toHaveProperty('slug') && expect(typeof topic.slug).toBe('string');
                 expect(topic).toHaveProperty('description') && expect(typeof topic.description).toBe('string');
@@ -48,6 +56,44 @@ describe('CORE: GET /api/topics', () => {
         });
     });
 });
+
+describe('CORE: GET /api', () => {
+    test('returns 200 status code', () => {
+        return request(app)
+        .get('/api')
+        .expect(200)
+    })
+    test('returns an object', () => {
+        return request(app)
+        .get('/api')
+        .expect(200)
+        .then((response) => {
+            const apiObj = response.body;
+            expect(typeof apiObj).toBe('object');
+        })
+    })
+    test('returns the correct representation of all apis', () => {    
+        return request(app)
+        .get('/api')
+        .expect(200)
+        .then((response) => {
+            const response_API_Obj = response.body;
+            return fs.readFile(`${__dirname}/../endpoints.json`,'utf-8')
+            .then((contents) => {
+            const actual_API_Obj = JSON.parse(contents);
+            expect(response_API_Obj).toEqual(actual_API_Obj);
+
+//a brief description of the purpose and functionality of the endpoint.
+//which queries are accepted.
+//what format the request body needs to adhere to.
+//what an example response looks like.
+            })
+        })
+    })
+})
+
+
+
 
 describe('Error Handling', () => {
     describe('ERROR: 404 Not Found', () => {
@@ -100,6 +146,5 @@ describe('Error Handling', () => {
                 expect(error.msg).toBe('Endpoint Does Not Exist');
             })
         })
-    })
-    
+    })  
 })

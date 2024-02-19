@@ -2,16 +2,20 @@ const express = require('express');
 const app = express();
 app.use(express.json());
 
-const { getAllTopics } = require('./controllers/controller');
+const { getAllTopics, getAll_APIs } = require('./controllers/controller');
 
 
 app.get('/api/topics', getAllTopics);
 
+app.get('/api', getAll_APIs);
+
+
+
 
 app.use((request, response, next) => {
     const error = {
-        status:404,
-        msg:'Endpoint Does Not Exist'
+        status: 404,
+        msg: 'Endpoint Does Not Exist'
     }
     next(error);
 });
