@@ -3,7 +3,7 @@ const data = require('../db/data/test-data/index')
  const seed = require('../db/seeds/seed')
  const { app } = require('../app')
  const request = require('supertest')
-const { string } = require('pg-format')
+const { response } = require('express')
 
 beforeEach(() => seed(data));
 afterAll(() => db.end());
@@ -48,3 +48,58 @@ describe('CORE: GET /api/topics', () => {
         });
     });
 });
+
+describe('Error Handling', () => {
+    describe('ERROR: 404 Not Found', () => {
+        test('returns a 404 error when the database has no entries for a valid query', () => {
+            return db.query('DELETE FROM comments;')
+            .then(() => {
+                return db.query('DELETE FROM articles;')
+            })
+            .then(() => {
+                return db.query('DELETE FROM topics;')
+            })
+            .then(() => {
+                return request(app)
+                .get('/api/topics')
+                .expect(404)
+            })
+        })
+        test('returns a custom error object of {status:404, msg:"No Topics Found"} if the database has no entries for a valid query', ()=> {
+            return db.query('DELETE FROM comments;')
+            .then(() => {
+                return db.query('DELETE FROM articles;')
+            })
+            .then(() => {
+                return db.query('DELETE FROM topics;')
+            })
+            .then(() => {
+                return request(app)
+                .get('/api/topics')
+                .expect(404)
+            })
+            .then((response) => {
+                const error = response.body
+                expect(error.msg).toBe('No Topics Found')
+            })
+         })
+
+         test('Returns a 404 status for an endpoint that does not exist', () => {
+            return request(app)
+            .get('/api/does-not-exist')
+            .expect(404).then((response) => {
+                
+            })
+        })
+        test('returns a customer error object of {status: 404, msg:"Endpoint Does Not Exist"', () => {
+            return request(app)
+            .get('/api/does-not-exist')
+            .expect(404)
+            .then((response) => {
+                const error = response.body;
+                expect(error.msg).toBe('Endpoint Does Not Exist');
+            })
+        })
+    })
+    
+})
