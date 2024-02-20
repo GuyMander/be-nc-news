@@ -1,11 +1,11 @@
-const { fetchAllTopics, fetchArticleById } = require('../models/model');
+const { fetchAllTopics, fetchArticleById, fetchAllArticles } = require('../models/model');
 const fs = require('fs/promises');
 
 
 exports.getAllTopics = (request, response, next) => {
     fetchAllTopics()
     .then((topics) => {
-        return response.status(200).send(topics);
+        return response.status(200).send({topics});
     })
     .catch((error) => {
         next(error);
@@ -30,7 +30,17 @@ exports.getArticleById = (request, response, next) => {
     const articleId = request.params.article_id;
     fetchArticleById(articleId)
     .then((article) => {
-        return response.status(200).send(article);
+        return response.status(200).send({article});
+    })
+    .catch((error) => {
+        next(error);
+    })
+}
+
+exports.getAllArticles = (request, response, next) => {
+    fetchAllArticles()
+    .then((articles) => {
+        return response.status(200).send({articles});
     })
     .catch((error) => {
         next(error);
