@@ -101,8 +101,26 @@ describe('CORE: GET /api/articles/:article_id', () => {
         .get('/api/articles/3')
         .expect(200)
         .then((response) => {
-            const article = response.body;
-            expect(typeof article).toBe('object');
+            const responseObj = response.body;
+            expect(typeof responseObj).toBe('object');
+        })
+    })
+    test('returns the correct article object with the correct keys and value types, all wrapped in an article object, when parsed a valid Id', () => {
+        return request(app)
+        .get('/api/articles/3')
+        .expect(200)
+        .then((response) => {
+            const article = response.body.article;
+
+            expect(article).toHaveProperty('author') && expect(typeof topic.slug).toBe('string')
+            expect(article).toHaveProperty('title') && expect(typeof topic.slug).toBe('string')
+            expect(article).toHaveProperty('article_id') && expect(typeof topic.slug).toBe('number')
+            expect(article).toHaveProperty('body') && expect(typeof topic.slug).toBe('string')
+            expect(article).toHaveProperty('topic') && expect(typeof topic.slug).toBe('string')
+            expect(article).toHaveProperty('created_at') && expect(typeof topic.slug).toBe('string')
+            expect(article).toHaveProperty('votes') && expect(typeof topic.slug).toBe('number')
+            expect(article).toHaveProperty('article_img_url') && expect(typeof topic.slug).toBe('string')
+
         })
     })
 })
@@ -111,54 +129,58 @@ describe('CORE: GET /api/articles/:article_id', () => {
 
 describe('Error Handling', () => {
     describe('ERROR: 404 Not Found', () => {
-        test('returns a 404 error when the database has no entries for a valid query', () => {
-            return db.query('DELETE FROM comments;')
-            .then(() => {
-                return db.query('DELETE FROM articles;')
+        describe('Get topics errors', () => {
+            test('returns a 404 error when the database has no entries for a valid query', () => {
+                return db.query('DELETE FROM comments;')
+                .then(() => {
+                    return db.query('DELETE FROM articles;')
+                })
+                .then(() => {
+                    return db.query('DELETE FROM topics;')
+                })
+                .then(() => {
+                    return request(app)
+                    .get('/api/topics')
+                    .expect(404)
+                })
             })
-            .then(() => {
-                return db.query('DELETE FROM topics;')
-            })
-            .then(() => {
-                return request(app)
-                .get('/api/topics')
-                .expect(404)
+            test('returns a custom error object of {status:404, msg:"No Topics Found"} if the database has no entries for a valid query', ()=> {
+                return db.query('DELETE FROM comments;')
+                .then(() => {
+                    return db.query('DELETE FROM articles;')
+                })
+                .then(() => {
+                    return db.query('DELETE FROM topics;')
+                })
+                .then(() => {
+                    return request(app)
+                    .get('/api/topics')
+                    .expect(404)
+                })
+                .then((response) => {
+                    const error = response.body
+                    expect(error.msg).toBe('No Topics Found')
+                })
             })
         })
-        test('returns a custom error object of {status:404, msg:"No Topics Found"} if the database has no entries for a valid query', ()=> {
-            return db.query('DELETE FROM comments;')
-            .then(() => {
-                return db.query('DELETE FROM articles;')
-            })
-            .then(() => {
-                return db.query('DELETE FROM topics;')
-            })
-            .then(() => {
+        
+        describe('None existant endpoints', () => {
+            test('Returns a 404 status for an endpoint that does not exist', () => {
                 return request(app)
-                .get('/api/topics')
+                .get('/api/does-not-exist')
                 .expect(404)
             })
-            .then((response) => {
-                const error = response.body
-                expect(error.msg).toBe('No Topics Found')
+            test('returns a customer error object of {status: 404, msg:"Endpoint Does Not Exist"', () => {
+                return request(app)
+                .get('/api/does-not-exist')
+                .expect(404)
+                .then((response) => {
+                    const error = response.body;
+                    expect(error.msg).toBe('Endpoint Does Not Exist');
+                })
             })
-         })
+        })
 
-         test('Returns a 404 status for an endpoint that does not exist', () => {
-            return request(app)
-            .get('/api/does-not-exist')
-            .expect(404).then((response) => {
-                
-            })
-        })
-        test('returns a customer error object of {status: 404, msg:"Endpoint Does Not Exist"', () => {
-            return request(app)
-            .get('/api/does-not-exist')
-            .expect(404)
-            .then((response) => {
-                const error = response.body;
-                expect(error.msg).toBe('Endpoint Does Not Exist');
-            })
-        })
-    })  
+    })
+    
 })
