@@ -16,10 +16,16 @@ exports.getAll_APIs = (request, response, next) => {
     return fs.readFile(`${__dirname}/../endpoints.json`,'utf-8')
     .then((contents) => {
         const full_API_JSON_Obj = JSON.parse(contents);
-        const output = {}
+        const output = {
+            all_APIs:{}
+        }
             for(const key in full_API_JSON_Obj){
-                output[key] = full_API_JSON_Obj[key].description
+                output.all_APIs[key] = full_API_JSON_Obj[key].description
             }
         return response.status(200).send(output);
     })
+}
+
+exports.getArticleById = (request, response, next) => {
+    return response.status(200).send({});
 }

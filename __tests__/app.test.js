@@ -81,9 +81,11 @@ describe('CORE: GET /api', () => {
             return fs.readFile(`${__dirname}/../endpoints.json`,'utf-8')
             .then((contents) => {
             const full_API_JSON_Obj = JSON.parse(contents);
-            const expected = {}
-            for(const key in full_API_JSON_Obj){
-                expected[key] = full_API_JSON_Obj[key].description
+            const expected = {
+                all_APIs:{}
+            }
+            for(const api in full_API_JSON_Obj){
+                expected.all_APIs[api] = full_API_JSON_Obj[api].description
             }
             
             expect(response_API_Obj).toEqual(expected);
@@ -92,6 +94,18 @@ describe('CORE: GET /api', () => {
     })
 })
 
+
+describe('CORE: GET /api/articles/:article_id', () => {
+    test('returns a 200 status code and an object', () => {
+        return request(app)
+        .get('/api/articles/3')
+        .expect(200)
+        .then((response) => {
+            const article = response.body;
+            expect(typeof article).toBe('object');
+        })
+    })
+})
 
 
 
