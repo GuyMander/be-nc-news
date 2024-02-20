@@ -38,6 +38,8 @@ describe('CORE: GET /api/topics', () => {
         .expect(200)
         .then((response)=>{
             const topics = response.body.topics;
+            expect(topics.length).not.toBe(0);
+
             topics.forEach((topic) => {
                 expect(typeof topic).toBe('object');
             });
@@ -49,6 +51,8 @@ describe('CORE: GET /api/topics', () => {
         .expect(200)
         .then((response)=>{
             const topics = response.body.topics;
+            expect(topics.length).not.toBe(0);
+            
             topics.forEach((topic) => {
                 expect(topic).toHaveProperty('slug') && expect(typeof topic.slug).toBe('string');
                 expect(topic).toHaveProperty('description') && expect(typeof topic.description).toBe('string');
