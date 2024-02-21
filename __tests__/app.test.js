@@ -5,6 +5,7 @@ const { app } = require('../app');
 const request = require('supertest');
 const fs = require('fs/promises');
 
+
 beforeEach(() => seed(data));
 afterAll(() => db.end());
 
@@ -60,6 +61,7 @@ describe('CORE: GET /api/topics', () => {
         });
     });
 });
+
 
 describe('CORE: GET /api', () => {
     test('returns 200 status code', () => {
@@ -129,6 +131,129 @@ describe('CORE: GET /api/articles/:article_id', () => {
     })
 })
 
+describe('CORE: GET /api/articles' , () => {
+    test('returns a 200 status code and an object', () => {
+        return request(app)
+        .get('/api/articles')
+        .expect(200)
+        .then((response) => {
+            const responseObj = response.body;
+            expect(typeof responseObj).toBe('object');
+        })
+    })
+    test('returns correct articles object with a key of "articles" and a value of type array', () => {
+        return request(app)
+        .get('/api/articles')
+        .expect(200)
+        .then((response) => {
+            const articles = response.body.articles;
+            const isAnArray = Array.isArray(articles);
+            expect(isAnArray).toBe(true);
+        })
+    })
+    test('returns the correct articles objects with an object at every element of the array', () => {
+            return request(app)
+            .get('/api/articles')
+            .expect(200)
+            .then((response) => {
+                const articles = response.body.articles;
+                expect(articles.length).not.toBe(0)
+
+                articles.forEach((article) => expect(typeof article).toBe('object'));
+
+            })
+    })
+    test('returns an article array when each article has the correct keys and value types apart from comment_count', () => {
+        return request(app)
+        .get('/api/articles')
+        .expect(200)
+        .then((response) => {
+            const articles = response.body.articles;
+            expect(articles.length).not.toBe(0);
+
+            const exampleObj = {
+            author: expect.any(String),
+            title: expect.any(String),
+            article_id: expect.any(Number),
+            topic: expect.any(String),
+            created_at: expect.any(String),
+            votes: expect.any(Number),
+            article_img_url: expect.any(String)
+            }
+            articles.forEach((article) => {
+                expect(article).toMatchObject(exampleObj)
+            });
+
+        })
+    })
+    test('returns an article array when each article has all the correct keys and value types', () => {
+        return request(app)
+        .get('/api/articles')
+        .expect(200)
+        .then((response) => {
+            const articles = response.body.articles;
+            expect(articles.length).not.toBe(0);
+
+            const exampleObj = {
+            author: expect.any(String),
+            title: expect.any(String),
+            article_id: expect.any(Number),
+            topic: expect.any(String),
+            created_at: expect.any(String),
+            votes: expect.any(Number),
+            article_img_url: expect.any(String),
+            comment_count: expect.any(Number)
+            }
+            articles.forEach((article) => {
+                expect(article).toMatchObject(exampleObj)
+            });
+        })
+    })
+    test('In addition: the articles should be sorted by date in descending order. there should not be a body property present on any of the objects', () => {
+        return request(app)
+        .get('/api/articles')
+        .expect(200)
+        .then((response) => {
+            const articles = response.body.articles;
+            const orderedArticles = [...articles];
+            expect(articles.length).not.toBe(0);
+
+            orderedArticles.sort((currArt, nextArt) => Date.parse(currArt.created_at) - Date.parse(nextArt.created_at))
+            expect(orderedArticles).toEqual(articles);
+        })
+    })
+    test('returns articles without a body property present on any of the article objects' , () => {
+        return request(app)
+        .get('/api/articles')
+        .expect(200)
+        .then((response) => {
+            const articles = response.body.articles
+            expect(articles.length).not.toBe(0);
+
+            articles.forEach((article) => {
+                expect(article).not.toHaveProperty('body');
+            })
+        })
+    })
+    test('returns a status of 404 and a custom error object of {status:404, msg:"No Articles Found"} if the database has no entries in articles table', ()=> {
+        return db.query('DELETE FROM comments;')
+        .then(() => {
+            return db.query('DELETE FROM articles;')
+        })
+        .then(() => {
+            return db.query('DELETE FROM topics;')
+        })
+        .then(() => {
+            return request(app)
+            .get('/api/articles')
+            .expect(404)
+        })
+        .then((response) => {
+            const error = response.body
+            expect(error.msg).toBe('No Articles Found')
+        })
+    })
+})
 
 
 describe('Error Handling', () => {

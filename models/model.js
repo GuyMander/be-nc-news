@@ -10,7 +10,7 @@ exports.fetchAllTopics = () => {
         if(rows.length === 0) {
             return Promise.reject({status: 404, msg: 'No Topics Found'})
         }
-        return {topics: rows};
+        return rows;
    })
 }
 
@@ -27,6 +27,26 @@ exports.fetchArticleById = (id) => {
         if(rows.length === 0) {
             return Promise.reject({status: 404, msg: 'No Article Found'})
         }
-        return {article: rows[0]}
+        return rows[0];
+    })
+}
+
+exports.fetchAllArticles = () => {
+
+    return db.query(`
+    SELECT
+    articles.author, articles.title, articles.article_id, articles.topic, articles.created_at, articles.votes, articles.article_img_url,
+    COUNT(comments.comment_id)::INT AS comment_count
+    FROM articles
+    INNER JOIN comments
+    ON articles.article_id = comments.article_id
+    GROUP BY articles.article_id
+    ORDER BY articles.created_at ASC
+    ;`)
+    .then(({rows}) => {
+        if(rows.length === 0) {
+            return Promise.reject({status: 404, msg: 'No Articles Found'})
+        }
+        return rows;
     })
 }
