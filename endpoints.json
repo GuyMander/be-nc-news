@@ -83,5 +83,20 @@
         }
       ]
     }
+  },
+  "POST /api/articles/:article_id/comments": {
+    "description": "takes an object with username and body key-values, all are <STRINGS>. Then posts this comment to the database referencing the article_id specified in the endpoint",
+    "queries": [],
+    "responseFormat": "{ 'posted_comment': {<posted comment object>} }",
+    "exampleResponse": {
+      "posted_comment" : {
+        "comment_id": 33,
+          "votes": 0,
+          "created_at": "2024-02-21 16:00:00",
+          "author": "icellusedkars",
+          "body": "Yes, if you stare at the wall like a cat, that means you're a cat",
+          "article_id": 33
+      }
+    }
   }
 }

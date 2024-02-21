@@ -58,10 +58,38 @@ exports.fetchAllCommentsByArticleId = (id) => {
     FROM comments
     WHERE article_id = $1
     ORDER BY created_at DESC
-    ;`, [id]).then(({rows}) => {
+    ;`, [id])
+    .then(({rows}) => {
         if(rows.length === 0){
             return Promise.reject({status: 404, msg: 'No Comments Found'})
         }
         return rows;
     })
+}
+
+exports.createCommentByArticleId = (id, comment) => {
+    if(!comment.username || !comment.body){
+        return Promise.reject({status: 400, msg: "Invalid Comment"})
+    }
+    const formattedComment = [[id, comment.username, comment.body]];
+    const formattedQuery = format(`
+    INSERT INTO comments
+    (article_id, author, body)
+    VALUES
+    %L
+    RETURNING *
+    ;`, formattedComment);
+    return db.query(formattedQuery)
+    .then(({rows}) => {
+        return rows[0];
+    })
+    .catch((error) => {
+        if(error.code === '23503'){
+            const customError = {status:404, msg: 'No Username Found'};
+            return Promise.reject(customError);
+        }
+        else{
+            return Promise.reject(error)
+        }
+    });
 }
