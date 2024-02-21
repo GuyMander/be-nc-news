@@ -1,4 +1,4 @@
-const { fetchAllTopics, fetchArticleById, fetchAllArticles, fetchAllCommentsByArticleId } = require('../models/model');
+const { fetchAllTopics, fetchArticleById, fetchAllArticles, fetchAllCommentsByArticleId, createCommentByArticleId } = require('../models/model');
 const fs = require('fs/promises');
 
 
@@ -54,6 +54,21 @@ exports.getAllCommentsByArticleId = (request, response, next) => {
     .then((promises) => {
         const comments = promises[0];
         return response.status(200).send({comments});
+    })
+    .catch((error) => {
+        next(error);
+    })
+}
+
+exports.postCommentByArticleId = (request, response, next) => {
+    const articleId = request.params.article_id;
+    return fetchArticleById(articleId)
+    .then((article)=> {
+        const comment = request.body;
+        return createCommentByArticleId(article.article_id, comment)
+    })
+    .then((posted_comment) => {
+        return response.status(201).send({posted_comment});
     })
     .catch((error) => {
         next(error);

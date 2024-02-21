@@ -400,7 +400,7 @@ describe('CORE: GET /api/articles/:article_id/comments', () => {
             expect(error.msg).toBe('No Comments Found');
         })
     })
-    test('returns a 400 status and a customer error object of {status:400, msg:"Invalid article_id"} when parsed an invalid article_id ', () => {
+    test('returns a 400 status and a customer error object of { status:400, msg: "Invalid article_id"} when parsed an invalid article_id', () => {
         return request(app)
         .get('/api/articles/0/comments')
         .expect(400)
@@ -416,6 +416,84 @@ describe('CORE: GET /api/articles/:article_id/comments', () => {
                 const error = response.body;
                 expect(error.msg).toBe('Invalid article_id');
             })
+        })
+    })
+})
+
+describe('CORE: POST /api/articles/:article_id/comments', () => {
+    test('returns a status code of 201 and an object', () => {
+        const newComment = { username: "icellusedkars", body:"Yes, if you stare at the wall like a cat, that means you're a cat"};
+        return request(app)
+        .post('/api/articles/11/comments')
+        .send(newComment)
+        .expect(201)
+        .then((response) => {
+            const bodyObj = response.body;
+            expect(typeof bodyObj).toBe('object');
+        })
+    })
+    test('returns a posted_comments object with the correct keys and value types when given the correct username and article_id', () => {
+        const newComment = { username: "icellusedkars", body: "Yes, if you stare at the wall like a cat, that means you're a cat"};
+        return request(app)
+        .post('/api/articles/11/comments')
+        .send(newComment)
+        .expect(201)
+        .then((response) => {
+            const posted_comment = response.body.posted_comment;
+            const exampleCommentObj = {
+                "comment_id": expect.any(Number),
+                "votes": expect.any(Number),
+                "created_at": expect.any(String),
+                "author": expect.any(String),
+                "body": expect.any(String),
+                "article_id": expect.any(Number)
+                }
+            
+            expect(posted_comment).toMatchObject(exampleCommentObj);
+        })
+    })
+    test('returns a status of 400 and a customer error object of {status: 400, msg: "Invalid article_id" } when using an article id that does not exist', () => {
+        const newComment = { username: "icellusedkars", body: "Yes, if you stare at the wall like a cat, that means you're a cat"};
+        return request(app)
+        .post('/api/articles/0/comments')
+        .send(newComment)
+        .expect(400)
+        .then((response) => {
+            const error = response.body;
+            expect(error.msg).toBe('Invalid article_id');
+        })
+    })
+    test('returns a status of 400 and a custom error object of {status:400, msg: "Invalid Comment"} when provided an invalid comment object', () => {
+        const newComment = { username: "icellusedkars", not_a_body: "Yes, if you stare at the wall like a cat, that means you're a cat"};
+        return request(app)
+        .post('/api/articles/11/comments')
+        .send(newComment)
+        .expect(400)
+        .then((response) => {
+            const error = response.body;
+            expect(error.msg).toBe('Invalid Comment');
+        })
+    })
+    test('returns a status of 404 and a custom error object of {status:404, msg: "No Article Found"} when provided an valid non-existant article_id', () => {
+        const newComment = { username: "icellusedkars", not_a_body: "Yes, if you stare at the wall like a cat, that means you're a cat"};
+        return request(app)
+        .post('/api/articles/33/comments')
+        .send(newComment)
+        .expect(404)
+        .then((response) => {
+            const error = response.body;
+            expect(error.msg).toBe('No Article Found');
+        })
+    })
+    test('returns a status of 404 and a custom error object of {status:404, msg:"No Username Found"} if the database has no users with the provided username in requested comment object' ,() => {
+        const newComment = { username: "not_a_username", body: "Yes, if you stare at the wall like a cat, that means you're a cat"};
+        return request(app)
+        .post('/api/articles/11/comments')
+        .send(newComment)
+        .expect(404)
+        .then((response) => {
+            const error = response.body;
+            expect(error.msg).toBe('No Username Found');
         })
     })
 })
