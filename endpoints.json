@@ -14,7 +14,7 @@
   "GET /api/topics": {
     "description": "serves an array of all topics",
     "queries": [],
-    "responseFormat": "{ 'topics' : <array of objects> }",
+    "responseFormat": "{ 'topics' : <array of topic objects> }",
     "exampleResponse": {
       "topics": [
       { "slug": "football", "description": "Footie!" }
@@ -24,7 +24,7 @@
   "GET /api/articles": {
     "description": "serves an array of all articles",
     "queries": ["author", "topic", "sort_by", "order"],
-    "responseFormat":"{ 'articles' : <array of objects> }",
+    "responseFormat":"{ 'articles' : <array of article objects> }",
     "exampleResponse": {
       "articles": [
         {
@@ -65,6 +65,23 @@
         "votes": 0,
         "article_img_url": "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700"
       }
+    }
+  },
+  "GET /api/articles/:article_id/comments": {
+    "description": "serves an array of all comments for a given article_id",
+    "queries": [],
+    "responseFormat":"{ 'comments' : <array of comment objects> }",
+    "exampleResponse": {
+      "comments": [
+        {
+          "comment_id": 16,
+          "votes": 1,
+          "created_at": "2020-10-11 16:23:00",
+          "author": "butter_bridge",
+          "body": "This is a bad article name",
+          "article_id": 6
+        }
+      ]
     }
   }
 }

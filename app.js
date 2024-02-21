@@ -7,7 +7,8 @@ const {
   getAllTopics,
   getAll_APIs,
   getArticleById,
-  getAllArticles } = require('./controllers/controller');
+  getAllArticles,
+  getAllCommentsByArticleId } = require('./controllers/controller');
   
 
 
@@ -18,6 +19,8 @@ app.get('/api', getAll_APIs);
 app.get('/api/articles/:article_id', getArticleById);
 
 app.get('/api/articles', getAllArticles);
+
+app.get('/api/articles/:article_id/comments', getAllCommentsByArticleId)
 
 
 

@@ -4,6 +4,7 @@ const seed = require('../db/seeds/seed');
 const { app } = require('../app');
 const request = require('supertest');
 const fs = require('fs/promises');
+const { string } = require('pg-format');
 
 
 beforeEach(() => seed(data));
@@ -149,16 +150,18 @@ describe('CORE: GET /api/articles/:article_id', () => {
         .expect(200)
         .then((response) => {
             const article = response.body.article;
+            const exampleObj = {
+                author: expect.any(String),
+                title: expect.any(String),
+                article_id: expect.any(Number),
+                body: expect.any(String),
+                topic: expect.any(String),
+                created_at: expect.any(String),
+                votes: expect.any(Number),
+                article_img_url: expect.any(String)
+                }
 
-            expect(article).toHaveProperty('author') && expect(typeof topic.slug).toBe('string')
-            expect(article).toHaveProperty('title') && expect(typeof topic.slug).toBe('string')
-            expect(article).toHaveProperty('article_id') && expect(typeof topic.slug).toBe('number')
-            expect(article).toHaveProperty('body') && expect(typeof topic.slug).toBe('string')
-            expect(article).toHaveProperty('topic') && expect(typeof topic.slug).toBe('string')
-            expect(article).toHaveProperty('created_at') && expect(typeof topic.slug).toBe('string')
-            expect(article).toHaveProperty('votes') && expect(typeof topic.slug).toBe('number')
-            expect(article).toHaveProperty('article_img_url') && expect(typeof topic.slug).toBe('string')
-
+            expect(article).toMatchObject(exampleObj);
         })
     })
     test('returns a 404 error when the database has no entries for a valid id format but no id in the database', () => {
@@ -320,6 +323,99 @@ describe('CORE: GET /api/articles' , () => {
         .then((response) => {
             const error = response.body
             expect(error.msg).toBe('No Articles Found')
+        })
+    })
+})
+
+describe('CORE: GET /api/articles/:article_id/comments', () => {
+    test('returns a 200 status code and an object', () => {
+        return request(app)
+        .get('/api/articles/6/comments')
+        .expect(200)
+        .then((response) => {
+            const object = response.body;
+            expect(typeof object).toBe('object');
+        })
+    })
+    test('returns an object with a key of "comments" and a value of an array of objects', () => {
+        return request(app)
+        .get('/api/articles/6/comments')
+        .expect(200)
+        .then((response) => {
+            const comments = response.body.comments;
+            expect(comments.length).not.toBe(0);
+            expect(Array.isArray(comments)).toBe(true);
+        })
+    })
+    test('the comments array has the correct keys and value types', () => {
+        return request(app)
+        .get('/api/articles/6/comments')
+        .expect(200)
+        .then((response) => {
+            const comments = response.body.comments;
+            expect(comments.length).not.toBe(0);
+            const exampleCommentObj = {
+                "comment_id": expect.any(Number),
+                "votes": expect.any(Number),
+                "created_at": expect.any(String),
+                "author": expect.any(String),
+                "body": expect.any(String),
+                "article_id": expect.any(Number)
+                }
+
+            comments.forEach((comment) => {
+            expect(comment).toMatchObject(exampleCommentObj)
+            })
+        })
+    })
+    test('the comments array is server in order of date created descending', () => {
+        return request(app)
+        .get('/api/articles/1/comments')
+        .expect(200)
+        .then((response) => {
+            const comments = response.body.comments;
+            expect(comments.length).not.toBe(0);
+
+            const orderedComments = [...comments];
+
+            orderedComments.sort((currCom, nextCom) => Date.parse(nextCom.created_at) - Date.parse(currCom.created_at))
+            expect(comments).toEqual(orderedComments);
+        })
+    })
+    test('returns a status of 404 and a custom error object of {status:404, msg:"No Comments Found"} if the database has no comments for a valid article_id', () => {
+        return request(app)
+        .get('/api/articles/2/comments')
+        .expect(404)
+        .then((response) => {
+            const error = response.body;
+            expect(error.msg).toBe('No Comments Found');
+        })
+    })
+    test('returns a status of 404 and a custom error object of {status:404, msg:"No Comments Found"} if the database has no comments for a valid non-existant article_id', () => {
+        return request(app)
+        .get('/api/articles/1000/comments')
+        .expect(404)
+        .then((response) => {
+            const error = response.body;
+            expect(error.msg).toBe('No Comments Found');
+        })
+    })
+    test('returns a 400 status and a customer error object of {status:400, msg:"Invalid article_id"} when parsed an invalid article_id ', () => {
+        return request(app)
+        .get('/api/articles/0/comments')
+        .expect(400)
+        .then((response) => {
+            const error = response.body;
+            expect(error.msg).toBe('Invalid article_id');
+        })
+        .then(() => {
+            return request(app)
+            .get('/api/articles/zero/comments')
+            .expect(400)
+            .then((response) => {
+                const error = response.body;
+                expect(error.msg).toBe('Invalid article_id');
+            })
         })
     })
 })
