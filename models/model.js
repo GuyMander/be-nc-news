@@ -31,30 +31,42 @@ exports.fetchArticleById = (id) => {
     })
 }
 
-exports.fetchAllArticles = () => {
-
-    return db.query(`
-    SELECT
+exports.fetchAllArticles = (topic) => {
+    let queryStr = `SELECT
     articles.author, articles.title, articles.article_id, articles.topic, articles.created_at, articles.votes, articles.article_img_url,
     COUNT(comments.comment_id)::INT AS comment_count
     FROM articles
-    INNER JOIN comments
-    ON articles.article_id = comments.article_id
+    LEFT JOIN comments
+    ON articles.article_id = comments.article_id `;
+
+    if(topic){
+        const formattedTopic = format('%L', topic);
+        queryStr += `WHERE articles.topic = ${formattedTopic} `;
+    }
+    
+    queryStr += `
     GROUP BY articles.article_id
     ORDER BY articles.created_at ASC
-    ;`)
+    ;`
+
+    return db.query(queryStr)
     .then(({rows}) => {
         if(rows.length === 0) {
-            return Promise.reject({status: 404, msg: 'No Articles Found'})
+            return Promise.reject({status: 404, msg: 'No Articles Found'});
         }
-        return rows;
+        else{
+            return rows;
+        }
+    })
+    .catch((error) => {
+        return Promise.reject(error);
     })
 }
 
 exports.fetchAllCommentsByArticleId = (id) => {
     return db.query(`
     SELECT
-    comment_id,votes,created_at,author,body,article_id
+    comment_id, votes, created_at, author, body, article_id
     FROM comments
     WHERE article_id = $1
     ORDER BY created_at DESC

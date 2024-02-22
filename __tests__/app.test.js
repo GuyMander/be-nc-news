@@ -756,6 +756,81 @@ describe('CORE: GET /api/users', () => {
     })
 })
 
+describe('FEATURE: GET /api/articles (topic query)', () => {
+    test('Responds with all articles when topic is omitted in the query', () => {
+        const arrOfAllArticles = require('../db/data/test-data/articles_array');
+        arrOfAllArticles.sort((curr,next) => curr.article_id - next.article_id);
+        return request(app)
+        .get('/api/articles')
+        .expect(200)
+        .then((response) => {
+            const articles = response.body.articles;
+            articles.sort((curr,next) => curr.article_id - next.article_id);
+            expect(articles.length).toBe(arrOfAllArticles.length);
+            expect(articles).toEqual(arrOfAllArticles);
+        })
+    })
+    test('Responds with all articles when the topic query is misspelt', () => {
+        const arrOfAllArticles = require('../db/data/test-data/articles_array');
+        arrOfAllArticles.sort((curr,next) => curr.article_id - next.article_id);
+        return request(app)
+        .get('/api/articles?topc=')
+        .expect(200)
+        .then((response) => {
+            const articles = response.body.articles;
+            articles.sort((curr,next) => curr.article_id - next.article_id);
+            expect(articles.length).toBe(arrOfAllArticles.length);
+            expect(articles).toEqual(arrOfAllArticles);
+        })
+    })
+    test('Responds with all articles when the value is omitted in the topic query', () => {
+        const arrOfAllArticles = require('../db/data/test-data/articles_array');
+        arrOfAllArticles.sort((curr,next) => curr.article_id - next.article_id);
+        return request(app)
+        .get('/api/articles?topic=')
+        .expect(200)
+        .then((response) => {
+            const articles = response.body.articles;
+            articles.sort((curr,next) => curr.article_id - next.article_id);
+            expect(articles.length).toBe(arrOfAllArticles.length);
+            expect(articles).toEqual(arrOfAllArticles);
+        })
+    })
+    test('Responds with all articles (1) when the value is included in the topic query', () => {
+        const arrOfAllArticles = require('../db/data/test-data/articles_array');
+        const articles_with_cats = arrOfAllArticles.filter((article) => article.topic === 'cats' ? article: false);
+        return request(app)
+        .get('/api/articles?topic=cats')
+        .expect(200)
+        .then((response) => {
+            const catArticles = response.body.articles;
+
+            expect(catArticles[0]).toEqual(articles_with_cats[0]);
+        })
+    })
+    test('Responds with all articles (12) when the value is included in the topic query', () => {
+        const arrOfAllArticles = require('../db/data/test-data/articles_array');
+        const articles_with_mitch = arrOfAllArticles.filter((article) => article.topic === 'mitch' ? article: false);
+        articles_with_mitch.sort((curr, next) => curr.article_id - next.article_id);
+
+        return request(app)
+        .get('/api/articles?topic=mitch')
+        .expect(200)
+        .then((response) => {
+            const mitchArticles = response.body.articles.sort((curr,next) => curr.article_id - next.article_id);
+            expect(mitchArticles).toEqual(articles_with_mitch);
+        })
+    })
+    test('Responds with status 404 and custom error if parsed a topic value that does not exist', () => {
+        return request(app)
+        .get('/api/articles?topic=not_a_topic')
+        .expect(404)
+        .then((response) => {
+            const error = response.body
+            expect(error.msg).toBe('No Articles Found')
+        })
+    })
+})
 
 
 describe('Error Handling', () => {
