@@ -1,4 +1,4 @@
-const { fetchAllTopics, fetchArticleById, fetchAllArticles, fetchAllCommentsByArticleId, createCommentByArticleId } = require('../models/model');
+const { fetchAllTopics, fetchArticleById, fetchAllArticles, fetchAllCommentsByArticleId, createCommentByArticleId, updateArticleById } = require('../models/model');
 const fs = require('fs/promises');
 
 
@@ -73,4 +73,19 @@ exports.postCommentByArticleId = (request, response, next) => {
     .catch((error) => {
         next(error);
     })
+}
+
+exports.patchArticleById = (request, response, next) => {
+    const article_id = request.params.article_id;
+    const voteObj = request.body;
+    const promises = [updateArticleById(article_id, voteObj), fetchArticleById(article_id)]
+    Promise.all(promises)
+    .then((promises) => {
+        const updated_article = promises[0];
+        return response.status(201).send({updated_article})
+    })
+    .catch((error) => {
+        next(error);
+    })
+
 }

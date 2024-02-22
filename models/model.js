@@ -93,3 +93,24 @@ exports.createCommentByArticleId = (id, comment) => {
         }
     });
 }
+
+exports.updateArticleById = (id, voteObj) => {
+    const votes_to_add = voteObj.inc_votes;
+    if (typeof votes_to_add !== 'number'){
+        return Promise.reject({status: 400, msg: 'Invalid Vote Object'});
+    }
+    return db.query(`
+    UPDATE articles
+    SET
+    votes = votes + $2
+    WHERE
+    article_id = $1
+    RETURNING *
+    ;`, [id, votes_to_add])
+    .then(({rows}) => {
+        return rows[0]
+    })
+    .catch((error) => {
+        return Promise.reject(error)
+    })
+}
