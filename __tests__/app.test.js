@@ -4,7 +4,6 @@ const seed = require('../db/seeds/seed');
 const { app } = require('../app');
 const request = require('supertest');
 const fs = require('fs/promises');
-const { string } = require('pg-format');
 
 
 beforeEach(() => seed(data));
@@ -343,7 +342,7 @@ describe('CORE: GET /api/articles/:article_id/comments', () => {
         .expect(200)
         .then((response) => {
             const comments = response.body.comments;
-            expect(comments.length).not.toBe(0);
+            expect(comments.length).toBe(1);
             expect(Array.isArray(comments)).toBe(true);
         })
     })
@@ -421,7 +420,7 @@ describe('CORE: GET /api/articles/:article_id/comments', () => {
 })
 
 describe('CORE: POST /api/articles/:article_id/comments', () => {
-    test('returns a status code of 201 and an object', () => {
+    test('returns a status code of 201 and an object when given a correct id', () => {
         const newComment = { username: "icellusedkars", body:"Yes, if you stare at the wall like a cat, that means you're a cat"};
         return request(app)
         .post('/api/articles/11/comments')
@@ -463,7 +462,18 @@ describe('CORE: POST /api/articles/:article_id/comments', () => {
             expect(error.msg).toBe('Invalid article_id');
         })
     })
-    test('returns a status of 400 and a custom error object of {status:400, msg: "Invalid Comment"} when provided an invalid comment object', () => {
+    test('returns a status of 400 and a customr error object when {status:400, msg: "Invalid Comment: <Reason>"} when no username key appears on the comment object', () => {
+        const newComment = { no_username: "icellusedkars", body: "Yes, if you stare at the wall like a cat, that means you're a cat"};
+        return request(app)
+        .post('/api/articles/11/comments')
+        .send(newComment)
+        .expect(400)
+        .then((response) => {
+            const error = response.body;
+            expect(error.msg).toBe('Invalid Comment: No username property');
+        })
+    })
+    test('returns a status of 400 and a custom error object of {status:400, msg: "Invalid Comment: <Reason>"} when no body key appears on the comment object', () => {
         const newComment = { username: "icellusedkars", not_a_body: "Yes, if you stare at the wall like a cat, that means you're a cat"};
         return request(app)
         .post('/api/articles/11/comments')
@@ -471,7 +481,7 @@ describe('CORE: POST /api/articles/:article_id/comments', () => {
         .expect(400)
         .then((response) => {
             const error = response.body;
-            expect(error.msg).toBe('Invalid Comment');
+            expect(error.msg).toBe('Invalid Comment: No body property');
         })
     })
     test('returns a status of 404 and a custom error object of {status:404, msg: "No Article Found"} when provided an valid non-existant article_id', () => {

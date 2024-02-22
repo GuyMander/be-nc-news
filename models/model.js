@@ -68,8 +68,11 @@ exports.fetchAllCommentsByArticleId = (id) => {
 }
 
 exports.createCommentByArticleId = (id, comment) => {
-    if(!comment.username || !comment.body){
-        return Promise.reject({status: 400, msg: "Invalid Comment"})
+    if(!comment.username){
+        return Promise.reject({status: 400, msg: 'Invalid Comment: No username property'})
+    }
+    if(!comment.body){
+        return Promise.reject({status:400, msg: 'Invalid Comment: No body property'})
     }
     const formattedComment = [[id, comment.username, comment.body]];
     const formattedQuery = format(`
