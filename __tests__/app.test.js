@@ -498,6 +498,147 @@ describe('CORE: POST /api/articles/:article_id/comments', () => {
     })
 })
 
+describe('CORE: PATCH /api/articles/:article_id', () => {
+    test('returns a status code of 201 and a article object', () => {
+        const voteObj = { inc_votes: 3 };
+
+        return request(app)
+        .patch('/api/articles/1')
+        .send(voteObj)
+        .expect(201)
+        .then((response) => {
+            const updated_article = response.body.updated_article;
+            expect(typeof updated_article).toBe('object');
+        })
+    })
+    test('returns an article object with the correct key-values', () => {
+        const voteObj = { inc_votes: 3 };
+
+        return request(app)
+        .patch('/api/articles/1')
+        .send(voteObj)
+        .expect(201)
+        .then((response) => {
+            const updated_article = response.body.updated_article;
+            const exampleArticleObj = {
+                author: expect.any(String),
+                title: expect.any(String),
+                article_id: expect.any(Number),
+                body: expect.any(String),
+                topic: expect.any(String),
+                created_at: expect.any(String),
+                votes: expect.any(Number),
+                article_img_url: expect.any(String)
+            }
+            expect(updated_article).toMatchObject(exampleArticleObj)
+        })
+    })
+    test('returns an updated_article object with votes having correctly been increased by the desired amount from the requested vote object', () => {
+        let originalVotes;
+        return request(app)
+        .get('/api/articles/1')
+        .expect(200)
+        .then((response) => {
+            originalVotes = response.body.article.votes
+            return
+        })
+        .then(() => {
+            const voteObj = { inc_votes: 3 };
+            return request(app)
+            .patch('/api/articles/1')
+            .send(voteObj)
+            .expect(201)    
+        })
+        .then((response) => {
+            const updated_article = response.body.updated_article;
+            expect(updated_article.votes).not.toEqual(originalVotes)
+            expect(updated_article.votes).toEqual(originalVotes + 3)
+        })
+
+    })
+    test('does not change any of the other values for the article object', () => {
+        let originalArticle;
+        return request(app)
+        .get('/api/articles/1')
+        .expect(200)
+        .then((response) => {
+            originalArticle = response.body.article
+            return
+        })
+        .then(() => {
+            const voteObj = { inc_votes: 3 };
+            return request(app)
+            .patch('/api/articles/1')
+            .send(voteObj)
+            .expect(201)    
+        })
+        .then((response) => {
+            const updated_article = response.body.updated_article;
+            expect(updated_article.votes).not.toEqual(originalArticle.votes)
+            expect(updated_article.votes).toEqual(originalArticle.votes + 3)
+            //votes has now been increased so, remove the keys from both objects and compare the remaining objects for sameness
+            delete updated_article.votes;
+            delete originalArticle.votes;
+            expect(updated_article).toEqual(originalArticle);
+        })
+    })
+    test('allows negative votes in the vote object', () => {
+        let originalVotes;
+        return request(app)
+        .get('/api/articles/1')
+        .expect(200)
+        .then((response) => {
+            originalVotes = response.body.article.votes
+            return
+        })
+        .then(() => {
+            const voteObj = { inc_votes: -3 };
+            return request(app)
+            .patch('/api/articles/1')
+            .send(voteObj)
+            .expect(201)    
+        })
+        .then((response) => {
+            const updated_article = response.body.updated_article;
+            expect(updated_article.votes).not.toEqual(originalVotes)
+            expect(updated_article.votes).toEqual(originalVotes - 3)
+        })
+    })
+    test('Invalid article_id gives 400 status and custom error of {status:404, msg: "Invalid article_id"}', () => {
+        const voteObj = { inc_votes: 3 };
+        return request(app)
+        .patch('/api/articles/0')
+        .send(voteObj)
+        .expect(400)    
+        .then((response) => { 
+            const error = response.body
+            expect(error.msg).toBe('Invalid article_id')  
+        })
+    })
+    test('Returns a 400 status for an invalid vote object with a custom error object of {status: 400, msg: "Invalid Vote Object"}', () => {
+        const voteObj = { not_a_vote_key: 3 };
+        return request(app)
+        .patch('/api/articles/1')
+        .send(voteObj)
+        .expect(400)    
+        .then((response) => { 
+            const error = response.body
+            expect(error.msg).toBe('Invalid Vote Object')  
+        })
+    })
+    test('returns 404 status for a valid article_id that is not found with custom error object of {status: 404, msg: "No Article Found"}', () => {
+        const voteObj = { inc_votes: 3 };
+        return request(app)
+        .patch('/api/articles/33')
+        .send(voteObj)
+        .expect(404)    
+        .then((response) => { 
+            const error = response.body
+            expect(error.msg).toBe('No Article Found')  
+        })
+    })
+})
+
 
 
 describe('Error Handling', () => {

@@ -4,7 +4,7 @@ app.use(express.json());
 
 const { handleNoEndpoint, handleCustomErrors, handlePsqlErrors, handleServerErrors } = require('./error_handling/errors');
 const { getAllTopics, getAll_APIs, getArticleById, getAllArticles, getAllCommentsByArticleId,
-   postCommentByArticleId } = require('./controllers/controller');
+   postCommentByArticleId, patchArticleById } = require('./controllers/controller');
   
 
 
@@ -19,6 +19,8 @@ app.get('/api/articles', getAllArticles);
 app.get('/api/articles/:article_id/comments', getAllCommentsByArticleId);
 
 app.post('/api/articles/:article_id/comments', postCommentByArticleId);
+
+app.patch('/api/articles/:article_id', patchArticleById);
 
 
 
