@@ -703,7 +703,7 @@ describe('CORE: DELETE /api/comments/:comment_id', () => {
         .expect(404)
         .then((response) => {
             const error = response.body;
-            expect(error.msg).toBe('No Comments Found');
+            expect(error.msg).toBe('No Comment Found');
         })
     })
 })

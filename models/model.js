@@ -135,7 +135,7 @@ exports.removeCommentById = (id) => {
             return rows;
         }
         else {
-            return Promise.reject({status:404, msg:'No Comments Found'})
+            return Promise.reject({status:404, msg:'No Comment Found'})
         }
     })
     .catch((error) => {
