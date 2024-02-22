@@ -390,13 +390,13 @@ describe('CORE: GET /api/articles/:article_id/comments', () => {
             expect(error.msg).toBe('No Comments Found');
         })
     })
-    test('returns a status of 404 and a custom error object of {status:404, msg:"No Comments Found"} if the database has no comments for a valid non-existant article_id', () => {
+    test('returns a status of 404 and a custom error object of {status:404, msg:"No Article Found"} if the database has no comments for a valid non-existant article_id', () => {
         return request(app)
         .get('/api/articles/1000/comments')
         .expect(404)
         .then((response) => {
             const error = response.body;
-            expect(error.msg).toBe('No Comments Found');
+            expect(error.msg).toBe('No Article Found');
         })
     })
     test('returns a 400 status and a customer error object of { status:400, msg: "Invalid article_id"} when parsed an invalid article_id', () => {
@@ -645,6 +645,65 @@ describe('CORE: PATCH /api/articles/:article_id', () => {
         .then((response) => { 
             const error = response.body
             expect(error.msg).toBe('No Article Found')  
+        })
+    })
+})
+
+describe('CORE: DELETE /api/comments/:comment_id', () => {
+    test('Responds with 204 and no content when given a valid & existing comment_id' , () => {
+        return request(app)
+        .delete('/api/comments/18')
+        .expect(204)
+        .then((response) => {
+            response.body === undefined;
+        })
+    })
+    test('Deletes the comment from the database based on the comment_id given', () => {
+        let originalComments;
+        return request(app)
+        .get('/api/articles/1/comments')
+        .expect(200)
+        .then((response) => {
+            originalComments = response.body.comments;
+            return request(app)
+            .delete('/api/comments/18')
+            .expect(204)
+        })
+        .then(() => {
+            return request(app)
+            .get('/api/articles/1/comments')
+            .expect(200)
+        })
+        .then((response) => {
+            const commentsAfterDeleted = response.body.comments;
+            expect(commentsAfterDeleted).not.toEqual(originalComments);
+            expect(commentsAfterDeleted.length).toBe(originalComments.length -1);
+            expect(commentsAfterDeleted[10]).toBe(undefined);
+        })
+    })
+    test('When parsed an invalid comment_id, returns a 400 status and custom error object {status: 400, msg:"Invalid comment_id"}', () => {
+        return request(app)
+        .delete('/api/comments/0')
+        .expect(400)
+        .then((response) => {
+            const error = response.body;
+            expect(error.msg).toBe('Invalid comment_id');
+            return request(app)
+            .delete('/api/comments/zero')
+            .expect(400)
+            .then((response) => {
+                const error = response.body;
+                expect(error.msg).toBe('Invalid comment_id');
+            })
+        })
+    })
+    test('When parsed a non existant valid comment_id, returns a 404 status with custom error object {status:404, msg:"No Comment Found"}', () => {
+        return request(app)
+        .delete('/api/comments/33')
+        .expect(404)
+        .then((response) => {
+            const error = response.body;
+            expect(error.msg).toBe('No Comments Found');
         })
     })
 })

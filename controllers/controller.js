@@ -1,4 +1,5 @@
-const { fetchAllTopics, fetchArticleById, fetchAllArticles, fetchAllCommentsByArticleId, createCommentByArticleId, updateArticleById } = require('../models/model');
+const { fetchAllTopics, fetchArticleById, fetchAllArticles, fetchAllCommentsByArticleId, createCommentByArticleId,
+    updateArticleById, removeCommentById } = require('../models/model');
 const fs = require('fs/promises');
 
 
@@ -49,10 +50,10 @@ exports.getAllArticles = (request, response, next) => {
 
 exports.getAllCommentsByArticleId = (request, response, next) => {
     const articleId = request.params.article_id;
-    const promises = [fetchAllCommentsByArticleId(articleId), fetchArticleById(articleId)]
+    const promises = [fetchArticleById(articleId), fetchAllCommentsByArticleId(articleId)]
     Promise.all(promises)
     .then((promises) => {
-        const comments = promises[0];
+        const comments = promises[1];
         return response.status(200).send({comments});
     })
     .catch((error) => {
@@ -83,6 +84,22 @@ exports.patchArticleById = (request, response, next) => {
     .then((promises) => {
         const updated_article = promises[0];
         return response.status(201).send({updated_article})
+    })
+    .catch((error) => {
+        next(error);
+    })
+}
+
+exports.deleteCommentById = (request, response, next) => {
+    const comment_id = request.params.comment_id;
+    removeCommentById(comment_id)
+    .then((confirmation) => {
+        if(confirmation){
+            return response.status(204).send()
+        }
+        else {
+            return Promise.reject({status: 400, msg: 'something went wrong'})
+        }
     })
     .catch((error) => {
         next(error);
