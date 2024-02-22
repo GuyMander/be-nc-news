@@ -68,8 +68,11 @@ exports.fetchAllCommentsByArticleId = (id) => {
 }
 
 exports.createCommentByArticleId = (id, comment) => {
-    if(!comment.username || !comment.body){
-        return Promise.reject({status: 400, msg: "Invalid Comment"})
+    if(!comment.username){
+        return Promise.reject({status: 400, msg: 'Invalid Comment: No username property'})
+    }
+    if(!comment.body){
+        return Promise.reject({status:400, msg: 'Invalid Comment: No body property'})
     }
     const formattedComment = [[id, comment.username, comment.body]];
     const formattedQuery = format(`
@@ -109,6 +112,31 @@ exports.updateArticleById = (id, voteObj) => {
     ;`, [id, votes_to_add])
     .then(({rows}) => {
         return rows[0]
+    })
+    .catch((error) => {
+        return Promise.reject(error)
+    })
+}
+
+exports.removeCommentById = (id) => {
+    const reIdValidator = /^(?!0$)\d+$/;
+    const reResult = reIdValidator.test(id);
+    if(!reResult){
+        return Promise.reject({status: 400, msg: 'Invalid comment_id'})
+    }
+
+    return db.query(`
+    DELETE FROM comments
+    WHERE comment_id = $1
+    RETURNING *
+    ;`, [id])
+    .then(({rows}) => {
+        if(rows.length !== 0){
+            return rows;
+        }
+        else {
+            return Promise.reject({status:404, msg:'No Comment Found'})
+        }
     })
     .catch((error) => {
         return Promise.reject(error)
