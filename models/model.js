@@ -142,3 +142,20 @@ exports.removeCommentById = (id) => {
         return Promise.reject(error)
     })
 }
+
+exports.fetchAllUsers = () => {
+    return db.query(`
+    SELECT username, name, avatar_url
+    FROM USERS
+    `).then(({rows}) => {
+        if(rows.length ===0) {
+            return Promise.reject({status:404, msg: 'No Users Found'});
+        }
+        else{
+            return rows;
+        }
+    })
+    .catch((error) => {
+        return Promise.reject(error);
+    })
+}

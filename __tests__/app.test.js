@@ -708,6 +708,54 @@ describe('CORE: DELETE /api/comments/:comment_id', () => {
     })
 })
 
+describe('CORE: GET /api/users', () => {
+    test('Responds with a status code of 200 and a user object with an array of objects', () => {
+        return request(app)
+        .get('/api/users')
+        .expect(200)
+        .then((response) => {
+            const users = response.body.users;
+            expect(Array.isArray(users)).toBe(true);
+        })
+    })
+    test('Responds with the correct key-values on the users object for all array elements', () => {
+        return request(app)
+        .get('/api/users')
+        .expect(200)
+        .then((response) => {
+            const users = response.body.users;
+            expect(users.length).not.toBe(0);
+            const exampleUserObj = {
+                username: expect.any(String),
+                name: expect.any(String),
+                avatar_url: expect.any(String)
+            }
+
+            users.forEach((user) => {
+                expect(user).toMatchObject(exampleUserObj);
+            })
+        })
+    })
+    test('Responds with a 404 status error and a customer error object of {status:400, msg:"No Users Found"} when there are no users in the database', () => {
+        return db.query(`DELETE FROM comments;`)
+        .then(() => {
+            return db.query(`DELETE FROM articles;`);
+        })
+        .then(() => {
+            return db.query('DELETE FROM users');
+        })
+        .then(() => {
+            return request(app)
+            .get('/api/users')
+            .expect(404)
+        })
+        .then((response) => {
+            const error = response.body;
+            expect(error.msg).toBe('No Users Found');
+        })
+    })
+})
+
 
 
 describe('Error Handling', () => {

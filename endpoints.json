@@ -121,5 +121,19 @@
     "queries": [],
     "responseFormat": "<status code 204>",
     "exampleResponse": 204
+  },
+  "GET /api/users": {
+    "description": "serves up an array of users",
+    "queries": [],
+    "responseFormat": "{ users: <Array of user objects> }",
+    "exampleResponse": {
+      "users": [
+        {
+        "username": "icellusedkars",
+        "name": "sam",
+        "avatar_url": "https://avatars2.githubusercontent.com/u/24604688?s=460&v=4"
+        }
+      ]
+    }
   }
 }
