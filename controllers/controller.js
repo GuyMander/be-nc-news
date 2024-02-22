@@ -1,5 +1,5 @@
 const { fetchAllTopics, fetchArticleById, fetchAllArticles, fetchAllCommentsByArticleId, createCommentByArticleId,
-    updateArticleById, removeCommentById } = require('../models/model');
+    updateArticleById, removeCommentById, fetchAllUsers } = require('../models/model');
 const fs = require('fs/promises');
 
 
@@ -104,5 +104,14 @@ exports.deleteCommentById = (request, response, next) => {
     .catch((error) => {
         next(error);
     })
+}
 
+exports.getAllUsers = (request, response, next) => {
+    fetchAllUsers()
+    .then((users) => {
+        return response.status(200).send({users});
+    })
+    .catch((error) => {
+        next(error);
+    })
 }

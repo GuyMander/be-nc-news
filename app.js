@@ -4,7 +4,7 @@ app.use(express.json());
 
 const { handleNoEndpoint, handleCustomErrors, handlePsqlErrors, handleServerErrors } = require('./error_handling/errors');
 const { getAllTopics, getAll_APIs, getArticleById, getAllArticles, getAllCommentsByArticleId,
-   postCommentByArticleId, patchArticleById, deleteCommentById } = require('./controllers/controller');
+   postCommentByArticleId, patchArticleById, deleteCommentById, getAllUsers } = require('./controllers/controller');
   
 
 
@@ -23,6 +23,8 @@ app.post('/api/articles/:article_id/comments', postCommentByArticleId);
 app.patch('/api/articles/:article_id', patchArticleById);
 
 app.delete('/api/comments/:comment_id', deleteCommentById);
+
+app.get('/api/users', getAllUsers);
 
 
 
