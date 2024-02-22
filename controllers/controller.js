@@ -39,7 +39,9 @@ exports.getArticleById = (request, response, next) => {
 }
 
 exports.getAllArticles = (request, response, next) => {
-    fetchAllArticles()
+    const topic = request.query.topic === undefined || request.query.topic === "" ? undefined : request.query.topic;
+
+    fetchAllArticles(topic)
     .then((articles) => {
         return response.status(200).send({articles});
     })
