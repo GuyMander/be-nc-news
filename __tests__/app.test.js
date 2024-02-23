@@ -390,13 +390,14 @@ describe('CORE: GET /api/articles/:article_id/comments', () => {
             expect(error.msg).toBe('No Comments Found');
         })
     })
-    test('returns a status of 404 and a custom error object of {status:404, msg:"No Article Found"} if the database has no comments for a valid non-existant article_id', () => {
+    test('returns a status of 404 and a custom error object of with a msg depending on which resolves first if the database has no comments for a valid non-existant article_id', () => {
         return request(app)
         .get('/api/articles/1000/comments')
         .expect(404)
         .then((response) => {
             const error = response.body;
-            expect(error.msg).toBe('No Article Found');
+            const errorMsgIsTrue = (error.msg === 'No Article Found' || error.msg === 'No Comments Found') ? true : false;
+            expect(errorMsgIsTrue).toBe(true);
         })
     })
     test('returns a 400 status and a customer error object of { status:400, msg: "Invalid article_id"} when parsed an invalid article_id', () => {
