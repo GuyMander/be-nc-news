@@ -1,7 +1,7 @@
 const db = require('../db/connection');
 const data = require('../db/data/test-data/index');
 const seed = require('../db/seeds/seed');
-const { app } = require('../app');
+const app = require('../app');
 const request = require('supertest');
 const fs = require('fs/promises');
 
