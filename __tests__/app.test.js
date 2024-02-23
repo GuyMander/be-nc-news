@@ -589,7 +589,8 @@ describe('CORE: PATCH /api/articles/:article_id', () => {
             //votes has now been increased so, remove the keys from both objects and compare the remaining objects for sameness
             delete updated_article.votes;
             delete originalArticle.votes;
-            expect(updated_article).toEqual(originalArticle);
+            delete originalArticle.comment_count;
+            expect(updated_article).toMatchObject(originalArticle);
         })
     })
     test('allows negative votes in the vote object', () => {
@@ -832,6 +833,57 @@ describe('FEATURE: GET /api/articles (topic query)', () => {
     })
 })
 
+describe('CORE: GET /api/articles/:article_id (comment_count)', () => {
+    test('responds with the extra property of comment_count', () => {
+        const example_article = {
+                article_id: expect.any(Number),
+                title: expect.any(String),
+                topic: expect.any(String),
+                author: expect.any(String),
+                body: expect.any(String),
+                created_at: expect.any(String),
+                votes: expect.any(Number),
+                article_img_url: expect.any(String),
+                comment_count: expect.any(Number)
+              }
+
+        return request(app)
+        .get('/api/articles/1')
+        .expect(200)
+        .then((response) => {
+            const article = response.body.article;
+            expect(article).toMatchObject(example_article);
+        })
+    })
+    test('Returns the correct value for the comment_count property', () => {
+        const articles = require('../db/data/test-data/articles_array')
+        articles.sort((curr, next) => curr.article_id - next.article_id);
+        const first_article = articles[0];
+        first_article.comment_count = 11;
+
+        return request(app)
+        .get('/api/articles/1')
+        .expect(200)
+        .then((response) => {
+            const article = response.body.article;
+            expect(article).toMatchObject(first_article);
+        }) 
+    })
+    test('Returns zero when there are no comments for the article', () => {
+        const articles = require('../db/data/test-data/articles_array')
+        articles.sort((curr, next) => curr.article_id - next.article_id);
+        const first_article = articles[1];
+        first_article.comment_count = 0;
+
+        return request(app)
+        .get('/api/articles/2')
+        .expect(200)
+        .then((response) => {
+            const article = response.body.article;
+            expect(article).toMatchObject(first_article);
+        }) 
+    })
+})
 
 describe('Error Handling', () => {
     describe('None existant endpoints', () => {
