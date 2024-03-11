@@ -1,8 +1,16 @@
-# Northcoders News API
+# My Northcoder's News API Project
 
-## Initial setup info
+## <span style="color:limegreen">How To Use</span>
 
-To run the code you will need to create 2 .env files in the "be-nc-news" directory
+<!-- A link to the hosted version.
+A summary of what the project is.
+Clear instructions of how to clone, install dependencies, seed local database, and run tests.
+Information about how to create the two .env files.
+The minimum versions of Node.js, and Postgres needed to run the project. -->
+
+## <span style="color:skyblue">Additional setup required</span>
+
+To run the code you will need to create 2 .env files in the "be-nc-news" directory. Feel free to use the default values within the setup.sql file as the values for the 2 .env files below.
 
 1) The first file will need to be named ".env.development". Its contents should point towards the development database:
 
@@ -12,7 +20,7 @@ To run the code you will need to create 2 .env files in the "be-nc-news" directo
 
 `PGDATABASE="<name_of_testing_database_here>"`
 
-3) Finally make sure to run a setup.sql file with the following code:
+3) Finally make sure to run the setup.sql file. It will have the following format below:
 
 ```
 DROP DATABASE IF EXISTS <name_of_test_database>;
